@@ -5,8 +5,10 @@ RUN groupadd -g 1000 laravel \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git unzip libpq-dev \
-    && docker-php-ext-install pdo_pgsql bcmath \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo_pgsql bcmath pcntl \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && rm -rf /var/lib/apt/lists/* /tmp/pear
 
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
@@ -19,4 +21,5 @@ RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
 
 WORKDIR /var/www/html
 EXPOSE 9000
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["sh", "/usr/local/bin/entrypoint.sh"]
+CMD ["php-fpm"]
