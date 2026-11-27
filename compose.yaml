@@ -13,6 +13,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
 
     networks:
       - saas_network
@@ -60,9 +62,27 @@ services:
     networks:
       - saas_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: saas_redis
+    restart: unless-stopped
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - saas_network
+
 networks:
   saas_network:
     driver: bridge
 
 volumes:
   postgres_data:
+  redis_data:
